@@ -1,0 +1,119 @@
+﻿<Window x:Class="PersistableGeneratorWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:persistableGeneratorWpf="clr-namespace:PersistableGeneratorWpf"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:data="clr-namespace:System.Data;assembly=System.Data"
+        Title="MainWindow" Height="393.284" Width="653.358" Loaded="Window_Loaded">
+    <Window.Resources>
+        <persistableGeneratorWpf:ComparisonBoolConverter x:Key="ComparisonBoolConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <ObjectDataProvider MethodName="GetValues"
+    		ObjectType="{x:Type sys:Enum}"
+    		x:Key="dbValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="data:DbType" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+    <Grid>
+        <TabControl Margin="10,35,10,10" SelectionChanged="TabControl_SelectionChanged">
+            <TabItem Header="Persistable">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Namespace" HorizontalAlignment="Left" Margin="14,11,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.947,1.962"/>
+                    <TextBox x:Name="txtNamespace" HorizontalAlignment="Left" Height="23" Margin="86,15,0,0" TextWrapping="Wrap" Text="{Binding Namespace, FallbackValue=UnnamedNamespace, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="120"/>
+                    <Label Content="Name" HorizontalAlignment="Left" Margin="211,11,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.947,1.962"/>
+                    <TextBox x:Name="txtName" HorizontalAlignment="Left" Height="23" Margin="258,15,0,0" TextWrapping="Wrap" Text="{Binding Name, FallbackValue=UnnamedPersistable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="120"/>
+                    <DataGrid x:Name="dataGrid" Margin="14,42,10,10" RenderTransformOrigin="-2.5,-1.615" ItemsSource="{Binding Fields}" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Name, Mode=TwoWay}" Header="Name"/>
+                            <DataGridTextColumn Binding="{Binding Type, Mode=TwoWay}" Header="Type"/>
+                            <DataGridCheckBoxColumn Binding="{Binding IsCollection, Mode=TwoWay}" Header="Is Collection?"/>
+                            <DataGridCheckBoxColumn Binding="{Binding IsPersistable, Mode=TwoWay}" Header="Is Persistable?"/>
+                            <DataGridComboBoxColumn Header="Db Table" DisplayMemberPath="Name" SelectedItemBinding="{Binding Table, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <DataGridComboBoxColumn.ElementStyle>
+                                    <Style TargetType="{x:Type ComboBox}">
+                                        <Setter Property="ItemsSource" Value="{Binding DataContext.Tables, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
+                                    </Style>
+                                </DataGridComboBoxColumn.ElementStyle>
+                                <DataGridComboBoxColumn.EditingElementStyle>
+                                    <Style TargetType="{x:Type ComboBox}">
+                                        <Setter Property="ItemsSource" Value="{Binding DataContext.Tables, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                                    </Style>
+                                </DataGridComboBoxColumn.EditingElementStyle>
+                            </DataGridComboBoxColumn>
+                            <DataGridComboBoxColumn Header="Db Column" DisplayMemberPath="Name" SelectedItemBinding="{Binding Column, Mode=TwoWay}">
+                                <DataGridComboBoxColumn.ElementStyle>
+                                    <Style TargetType="{x:Type ComboBox}">
+                                        <Setter Property="ItemsSource" Value="{Binding Table.Columns}"/>
+                                    </Style>
+                                </DataGridComboBoxColumn.ElementStyle>
+                                <DataGridComboBoxColumn.EditingElementStyle>
+                                    <Style TargetType="{x:Type ComboBox}">
+                                        <Setter Property="ItemsSource" Value="{Binding Table.Columns}"/>
+                                    </Style>
+                                </DataGridComboBoxColumn.EditingElementStyle>
+                            </DataGridComboBoxColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Database">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <ListBox x:Name="lbTables" HorizontalAlignment="Left" Margin="10,32,0,10" Width="155" ItemsSource="{Binding Tables}" SelectedIndex="{Binding SelectedTableIndex}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="persistableGeneratorWpf:DbTable">
+                                <StackPanel HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="100" Orientation="Horizontal">
+                                    <Label Content="*" Visibility="{Binding IsBaseTable, Converter={StaticResource BooleanToVisibilityConverter}}"></Label>
+                                    <Label Content="{Binding Name}"></Label>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <ListBox HorizontalAlignment="Left" Margin="295,32,0,10" Width="155" ItemsSource="{Binding SelectedDbTable.Columns}" SelectedIndex="{Binding SelectedDbTable.SelectedDbColumnIndex, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="persistableGeneratorWpf:DbColumn">
+                                <Label Content="{Binding Name}"></Label>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Label Content="Table Name" HorizontalAlignment="Left" Margin="170,32,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="txtTableName" HorizontalAlignment="Left" Height="23" Margin="170,63,0,0" TextWrapping="Wrap" Text="{Binding SelectedDbTable.Name}" VerticalAlignment="Top" Width="120"/>
+                    <Label Content="Primary Key" HorizontalAlignment="Left" Margin="170,91,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="txtPrimaryKey" HorizontalAlignment="Left" Height="23" Margin="170,122,0,0" TextWrapping="Wrap" Text="{Binding SelectedDbTable.PrimaryKey.Name, Mode=TwoWay}" VerticalAlignment="Top" Width="120"/>
+                    <CheckBox Content="Base Table?" HorizontalAlignment="Left" Margin="170,151,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.324,0.133" IsChecked="{Binding SelectedDbTable.IsBaseTable, Mode=TwoWay}" Checked="CheckBox_Checked"/>
+                    <CheckBox Content="Collection Table?" HorizontalAlignment="Left" Margin="170,171,0,0" VerticalAlignment="Top"/>
+                    <Label Content="Column Name" HorizontalAlignment="Left" Margin="455,32,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.368,0.308"/>
+                    <TextBox x:Name="txtColumnName" HorizontalAlignment="Left" Height="23" Margin="455,63,0,0" TextWrapping="Wrap" Text="{Binding SelectedDbTable.SelectedDbColumn.Name, Mode=TwoWay}" VerticalAlignment="Top" Width="120"/>
+                    <Label Content="Column Type" HorizontalAlignment="Left" Margin="455,91,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.079,0.115"/>
+                    <ComboBox x:Name="comboBox" HorizontalAlignment="Left" Margin="455,123,0,0" VerticalAlignment="Top" Width="120" ItemsSource="{Binding Source={StaticResource dbValues}}" SelectedItem="{Binding SelectedDbTable.SelectedDbColumn.Type, Mode=TwoWay}"/>
+                    <CheckBox Content="Persistable?" HorizontalAlignment="Left" Margin="455,151,0,0" VerticalAlignment="Top" IsChecked="{Binding IsPersistableReference, Mode=TwoWay}" IsEnabled="{Binding SelectedItem, Converter={StaticResource ComparisonBoolConverter}, ElementName=comboBox}"/>
+                    <Button Content="Add Table" HorizontalAlignment="Left" Margin="10,7,0,0" VerticalAlignment="Top" Width="69" Click="Add_Table_Click"/>
+                    <Button Content="Delete Table" HorizontalAlignment="Left" Margin="84,7,0,0" VerticalAlignment="Top" Width="81" Click="Remove_Table_Click"/>
+                    <Button Content="Add Col" HorizontalAlignment="Left" Margin="295,7,0,0" VerticalAlignment="Top" Width="69" Click="Add_Column_Click" />
+                    <Button Content="Delete Col" HorizontalAlignment="Left" Margin="369,7,0,0" VerticalAlignment="Top" Width="81" Click="Remove_Column_Click"/>
+                </Grid>
+            </TabItem>
+            <TabItem IsEnabled="false" Margin="-2,0"></TabItem>
+            <TabItem x:Name="Class_Tab" Header="Class">
+                <Grid x:Name="Class_Grid" Background="#FFE5E5E5" Margin="0,1,0,-1">
+                </Grid>
+            </TabItem>
+            <TabItem Header="Definition">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+            <TabItem Header="Migration">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+        </TabControl>
+        <Button Content="Choose Assembly" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="113"/>
+        <ComboBox HorizontalAlignment="Left" Margin="128,10,0,0" VerticalAlignment="Top" Width="168" Height="20"/>
+
+    </Grid>
+</Window>
