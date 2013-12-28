@@ -115,7 +115,6 @@ namespace PersistableGeneratorWpf
             // Create the interop host control.
             var host = new System.Windows.Forms.Integration.WindowsFormsHost();
             sourceEditor = new Scintilla();
-            sourceEditor.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             host.Child = sourceEditor;
             Class_Grid.Children.Add(host);
         }
